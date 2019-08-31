@@ -42,12 +42,15 @@ class Menu extends Component {
   render() {
     return (
       <Navbar color="light" light expand="md">
-        <Link className='mr-auto navbar-brand' to='/' exact>Home</Link>
+        <Link className='mr-auto navbar-brand' to='/'>Home</Link>
         <NavbarToggler onClick={this.toggleOpen}/>
         <Collapse isOpen={this.state.open} navbar>
           <Nav className="ml-auto" navbar>
-            <NavItem>
+          <NavItem>
               <NavLinkRouter to="/Tarefas">Tarefas</NavLinkRouter>
+            </NavItem>
+            <NavItem>
+              <NavLinkRouter to="/postagens">Postagens</NavLinkRouter>
             </NavItem>
             <NavItem>
               <NavLinkRouter to="/About/">Sobre</NavLinkRouter>

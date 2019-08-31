@@ -1,20 +1,21 @@
 import React, { Component } from 'react';
 
 import { Table } from 'reactstrap';
+import TaskItem from './TaskItem';
+
 
 export default class TaskList extends Component {
     state = {}
 
-    renderTaskItem = (task, index) => {
-        const { onTaskClick } = this.props;
+    renderTaskItem = task => {
+        const {onTaskClick, highlight} = this.props;
         return (
-            <tr key={task.id} onClick={() => onTaskClick(task)}>
-                <td>{ task.id }</td>
-                <td>{ task.title} </td>
-                <td>{ task.completed ? 'Sim' : 'Não' }</td>
-                <td>{ task.userId }</td>
-            </tr>
-        );
+            <TaskItem 
+                key={task.id} 
+                task={task}
+                highlight={highlight} 
+                onTaskClick={onTaskClick}/>
+        )
     }
 
     render() {
@@ -22,10 +23,12 @@ export default class TaskList extends Component {
         return (
             <Table hover>
                 <thead>
-                    <th>Id</th>
-                    <th>Título</th>
-                    <th>Concluída</th>
-                    <th>Usuário Id</th>
+                    <tr>
+                        <th>Id</th>
+                        <th>Título</th>
+                        <th>Concluída</th>
+                        <th>Usuário Id</th>
+                    </tr>
                 </thead>
                 <tbody>
                     {tasks.map(this.renderTaskItem)}

@@ -4,30 +4,36 @@ import { Container } from 'reactstrap';
 import {
   BrowserRouter, Route, Switch
 } from 'react-router-dom';
+import { Provider as ReduxProvider } from 'react-redux';
 
 import Home from './pages/Home';
 import Tasks from './pages/Tasks';
 import About from './pages/About';
-import Menu from './components/menu';
+import Menu from './components/Menu';
 import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
+import reduxStore from './redux';
+import Posts from './pages/Posts';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Menu/>
-      <Container>
-        <Switch>
-          {/* Rotas */}
-          <Route path='/' exact component={Home} />
-          <PrivateRoute path='/tarefas' component={Tasks} />
-          <Route path='/sobre' component={About} />
-          <Route path='/login' component={Login}/>
-          <Route component={NotFound}/>
-        </Switch>
-      </Container>
-    </BrowserRouter>
+    <ReduxProvider store={reduxStore}>
+      <BrowserRouter>
+        <Menu />
+        <Container>
+          <Switch>
+            {/* Rotas */}
+            <Route path='/' exact component={Home} />
+            <PrivateRoute path='/tarefas' component={Tasks} />
+            <Route path='/sobre' component={About} />
+            <Route path='/postagens' component={Posts} />
+            <Route path='/login' component={Login} />
+            <Route component={NotFound} />
+          </Switch>
+        </Container>
+      </BrowserRouter>
+    </ReduxProvider>
   );
 }
 

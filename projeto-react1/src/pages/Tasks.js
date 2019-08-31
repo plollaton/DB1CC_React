@@ -1,40 +1,58 @@
 import React, { Component } from 'react';
 
-import { Route, Link } from 'react-router-dom';
-import axios from 'axios';
-import { Spinner } from 'reactstrap';
-import TaskList from '../components/TaskList';
+import { connect } from 'react-redux';
 
-export default class Task extends Component {
+import { Route, Link } from 'react-router-dom';
+import { Spinner, Form, Row, Col } from 'reactstrap';
+import TaskList from '../components/TaskList';
+import Input from '../components/Input';
+import { validateTaskSearch } from '../utils/validations';
+import { requestTasksThunk } from '../thunks/tasks';
+
+class Task extends Component {
 
     state = {
-        tasks: [],
-        fetching: false
+        filteredTasks: [],
+        searchValue: '',
     }
 
     componentDidMount() {
-        this.requestTasks();
+        const { requestTasks } = this.props;
+        requestTasks();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        const { tasks } = this.props;
+        if (prevProps.tasks.data !== tasks.data) {
+            this.updateFilteredTasks();
+        }
     }
 
     onTaskClick = task => {
         this.props.history.push(`/tarefas/${task.id}`);
     }
 
-    requestTasks = () => {
-        this.setState({ fetching: true });
-        axios.get('https://jsonplaceholder.typicode.com/todos')
-            .then(response => {
-                // invocar quando a requisicao terminar com status 200
-                const { data } = response;
-                this.setState({ tasks: data });
-            })
-            .catch(error => {
-                //invocar quando houver erro 400, 500 ou até falta de internet
-                console.warn(error);
-            })
-            .finally(() => {
-                this.setState({ fetching: false });
-            });
+    updateFilteredTasks = () => {
+        const { tasks } = this.props;
+        const { searchValue } = this.state;
+
+        const filteredTasks = tasks.data.filter(task => {
+            return task.title.includes(searchValue);
+        });
+
+        this.setState({
+            filteredTasks,
+        })
+    }
+
+    onSearchChange = (event, valid) => {
+        if (!valid) return;
+        const { value } = event.target;
+        this.setState({
+            searchValue: value,
+        }, () => {
+            this.updateFilteredTasks();
+        });
     }
 
     renderTaskItem = (task, index) => {
@@ -46,8 +64,9 @@ export default class Task extends Component {
     }
 
     renderTasks = () => {
-        const { fetching, tasks } = this.state;
-        if (fetching) {
+        const { filteredTasks, searchValue } = this.state;
+        const { tasks } = this.props;
+        if (tasks.fetching) {
             return (<div>
                 <Spinner color="primary" />
                 <Spinner color="secondary" />
@@ -60,13 +79,17 @@ export default class Task extends Component {
             </div>)
         }
         return (
-            <TaskList tasks={tasks} onTaskClick={this.onTaskClick} />
+            <TaskList
+                tasks={filteredTasks}
+                onTaskClick={this.onTaskClick}
+                highlight={searchValue} />
         );
     }
 
     renderTaskDetail = (routeProps) => {
         const { taskId } = routeProps.match.params;
-        const task = this.state.tasks.find(item => item.id === parseInt(taskId))
+        const { tasks } = this.props;
+        const task = tasks.data.find(item => item.id === parseInt(taskId))
         if (!task) { //null || undefined || '' || 0 || NaN
             return null;
         };
@@ -84,13 +107,42 @@ export default class Task extends Component {
         <Route path='/tarefas/:taskId' render={this.renderTaskDetail} />
     )
 
+    renderFilter = () => {
+        return (
+            <Form>
+                <Row form>
+                    <Col md={6}>
+                        <Input label='Filtro'
+                            type='text'
+                            id='todo-search'
+                            placeholder='Buscar tarefas'
+                            onChange={this.onSearchChange}
+                            validate={validateTaskSearch}
+                        />
+                    </Col>
+                </Row>
+            </Form>
+        )
+    };
+
     render() {
         return (
             <div>
                 <h1>Página de Tarefas</h1>
+                {this.renderFilter()}
                 {this.renderTasks()}
                 {this.renderTaskRoute()}
             </div>
         );
     }
 }
+
+const mapStateToProps = state => ({
+    tasks: state.tasks,
+});
+
+const mapDispatchToProps = {
+    requestTasks: requestTasksThunk,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Task);

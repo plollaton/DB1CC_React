@@ -8,7 +8,7 @@ const Titulo = (props) => {
 
     return (
         <h1 style={style}>
-            Meu site lindo: {props.children}
+            {props.children}
         </h1>
     );
     
